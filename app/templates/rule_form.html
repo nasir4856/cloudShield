@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit Security Rule</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    :root { --color-primary:#3498db; --color-danger:#e74c3c; --color-neutral:#ecf0f1; }
+    body { background:linear-gradient(135deg,#000,#1a1a1a); color:var(--color-neutral); font-family:Inter,system-ui,sans-serif; padding:2rem; }
+    .card { background:rgba(20,20,20,.9); border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,.5); padding:24px; margin-bottom:24px; border:1px solid rgba(52,152,219,.4); }
+    .section-title { font-weight:700; border-bottom:3px solid var(--color-primary); padding-bottom:12px; margin-bottom:18px; text-shadow:0 0 10px var(--color-primary); }
+    input,textarea,select { background:#2a2a2a; color:var(--color-neutral); border:2px solid #444; width:100%; padding:10px; border-radius:8px; }
+    label { display:block; margin-bottom:6px; color:#cbd5e0; }
+    .btn-block { background-color:var(--color-primary); color:white; border-radius:8px; padding:8px 14px; }
+    .btn-unblock { background-color:var(--color-danger); color:white; border-radius:8px; padding:8px 14px; }
+  </style>
+</head>
+<body>
+  <div class="container mx-auto">
+    <h1 class="text-4xl font-bold mb-8 text-center" style="text-shadow:0 0 10px var(--color-primary);">Edit Security Rule</h1>
+    <div class="text-center mb-8"><a href="{{ url_for('admin.rules') }}" class="btn-block inline-block">Rules</a></div>
+    <div class="card">
+      <h2 class="section-title">{{ rule.name }}</h2>
+      <form method="POST" class="grid md:grid-cols-2 gap-4">
+        {{ csrf_field()|safe }}
+        <div><label>Name</label><input name="name" value="{{ rule.name }}" required></div>
+        <div><label>Type</label><select name="rule_type">{% for type in rule_types %}<option {% if rule.rule_type == type %}selected{% endif %}>{{ type }}</option>{% endfor %}</select></div>
+        <div class="md:col-span-2"><label>Description</label><textarea name="description" rows="2">{{ rule.description or '' }}</textarea></div>
+        <div class="md:col-span-2"><label>Pattern</label><textarea name="pattern" rows="2">{{ rule.pattern or '' }}</textarea></div>
+        <div class="md:col-span-2"><label>Condition JSON</label><textarea name="condition" rows="2">{{ rule.condition or '{}' }}</textarea></div>
+        <div><label>Severity</label><select name="severity">{% for severity in severities %}<option {% if rule.severity == severity %}selected{% endif %}>{{ severity }}</option>{% endfor %}</select></div>
+        <div><label>Action</label><select name="action">{% for action in actions %}<option {% if rule.action == action %}selected{% endif %}>{{ action }}</option>{% endfor %}</select></div>
+        <div><label>Threat Score</label><input name="threat_score" value="{{ rule.threat_score }}"></div>
+        <div><label>Priority</label><input name="priority" value="{{ rule.priority }}"></div>
+        <div><label>Application</label><select name="application_id"><option value="">Global</option>{% for app in applications %}<option value="{{ app.id }}" {% if rule.application_id == app.id %}selected{% endif %}>{{ app.name }}</option>{% endfor %}</select></div>
+        <label><input type="checkbox" name="enabled" {% if rule.enabled %}checked{% endif %} style="width:auto;"> Enabled</label>
+        <div class="md:col-span-2"><button class="btn-block" type="submit">Save Rule</button><a href="{{ url_for('admin.rules') }}" class="btn-unblock inline-block ml-2">Cancel</a></div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
+

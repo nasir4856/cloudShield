@@ -1,0 +1,67 @@
+services:
+  cloudshield:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cloudshield-app
+    environment:
+      APP_NAME: CloudShield
+      DATABASE_URL: sqlite:////app/data/cloudshield.db
+      BLOCKED_IPS_FILE: /app/data/blocked_ips.txt
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      REDIS_SSL: "false"
+      REDIS_SOCKET_TIMEOUT: 2
+      SESSION_COOKIE_SECURE: "false"
+      WTF_CSRF_ENABLED: "false"
+      UPSTREAM_TIMEOUT: 30
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+      - cloudshield_data:/app/data
+      - cloudshield_logs:/app/logs
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - cloudshield_internal
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/ready', timeout=3).read()",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: cloudshield-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - cloudshield_internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
+networks:
+  cloudshield_internal:
+    driver: bridge
+
+volumes:
+  redis_data:
+  cloudshield_data:
+  cloudshield_logs:

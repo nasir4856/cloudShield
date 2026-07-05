@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Keys</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    :root { --color-primary:#3498db; --color-danger:#e74c3c; --color-neutral:#ecf0f1; }
+    body { background:linear-gradient(135deg,#000,#1a1a1a); color:var(--color-neutral); font-family:Inter,system-ui,sans-serif; padding:2rem; }
+    .card { background:rgba(20,20,20,.9); border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,.5); padding:24px; margin-bottom:24px; border:1px solid rgba(52,152,219,.4); }
+    .section-title { font-weight:700; border-bottom:3px solid var(--color-primary); padding-bottom:12px; margin-bottom:18px; text-shadow:0 0 10px var(--color-primary); }
+    input,textarea,select { background:#2a2a2a; color:var(--color-neutral); border:2px solid #444; width:100%; padding:10px; border-radius:8px; }
+    label { display:block; margin-bottom:6px; color:#cbd5e0; }
+    .btn-block { background-color:var(--color-primary); color:white; border-radius:8px; padding:8px 14px; }
+    .btn-unblock { background-color:var(--color-danger); color:white; border-radius:8px; padding:8px 14px; }
+    table { width:100%; border-collapse:collapse; }
+    th,td { padding:12px; border-bottom:1px solid #333; text-align:left; vertical-align:top; }
+  </style>
+</head>
+<body>
+  <div class="container mx-auto">
+    <h1 class="text-4xl font-bold mb-8 text-center" style="text-shadow:0 0 10px var(--color-primary);">API Keys</h1>
+    <div class="text-center mb-8"><a href="{{ url_for('admin.admin_panel') }}" class="btn-block inline-block">Dashboard</a></div>
+    {% if plaintext_key %}
+      <div class="card"><h2 class="section-title">New API Key</h2><p>{{ plaintext_key }}</p><p class="text-gray-500">This key is shown once. Store it securely.</p></div>
+    {% endif %}
+    <div class="card">
+      <h2 class="section-title">Create API Key</h2>
+      <form method="POST" class="grid md:grid-cols-2 gap-4">
+        {{ csrf_field()|safe }}
+        <div><label>Key Name</label><input name="key_name" required></div>
+        <div><label>Expires At</label><input type="date" name="expires_at"></div>
+        <div><label>Status</label><select name="status"><option value="active">active</option><option value="disabled">disabled</option></select></div>
+        <div class="md:col-span-2"><label>Purpose</label><textarea name="purpose" rows="2"></textarea></div>
+        <div class="md:col-span-2"><button class="btn-block" type="submit">Generate API Key</button></div>
+      </form>
+    </div>
+    <div class="card">
+      <h2 class="section-title">Keys</h2>
+      <table>
+        <thead><tr><th>Name</th><th>Prefix</th><th>Status</th><th>Expires</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for key in api_keys %}
+            <tr>
+              <td>{{ key.key_name }}</td><td>{{ key.key_prefix }}</td><td>{{ key.status }}</td><td>{{ key.expires_at or '' }}</td>
+              <td><form method="POST" action="{{ url_for('admin.revoke_key', key_id=key.id) }}">{{ csrf_field()|safe }}<button class="btn-unblock" type="submit">Revoke</button></form></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

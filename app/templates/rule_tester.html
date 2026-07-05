@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rule Tester</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    :root { --color-primary:#3498db; --color-neutral:#ecf0f1; }
+    body { background:linear-gradient(135deg,#000,#1a1a1a); color:var(--color-neutral); font-family:Inter,system-ui,sans-serif; padding:2rem; }
+    .card { background:rgba(20,20,20,.9); border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,.5); padding:24px; margin-bottom:24px; border:1px solid rgba(52,152,219,.4); }
+    .section-title { font-weight:700; border-bottom:3px solid var(--color-primary); padding-bottom:12px; margin-bottom:18px; text-shadow:0 0 10px var(--color-primary); }
+    input,textarea,select { background:#2a2a2a; color:var(--color-neutral); border:2px solid #444; width:100%; padding:10px; border-radius:8px; }
+    label { display:block; margin-bottom:6px; color:#cbd5e0; }
+    .btn-block { background-color:var(--color-primary); color:white; border-radius:8px; padding:8px 14px; }
+  </style>
+</head>
+<body>
+  <div class="container mx-auto">
+    <h1 class="text-4xl font-bold mb-8 text-center" style="text-shadow:0 0 10px var(--color-primary);">Rule Tester</h1>
+    <div class="text-center mb-8"><a href="{{ url_for('admin.rules') }}" class="btn-block inline-block">Rules</a></div>
+    <div class="card">
+      <h2 class="section-title">Test Request</h2>
+      <form method="POST" class="grid md:grid-cols-2 gap-4">
+        {{ csrf_field()|safe }}
+        <div><label>URL</label><input name="url" value="/crm/.env"></div>
+        <div><label>Method</label><select name="method"><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option></select></div>
+        <div class="md:col-span-2"><label>Headers</label><textarea name="headers" rows="4">User-Agent: sqlmap</textarea></div>
+        <div class="md:col-span-2"><label>Query String</label><input name="query_string" value="q=' OR 1=1"></div>
+        <div class="md:col-span-2"><button class="btn-block" type="submit">Evaluate</button></div>
+      </form>
+    </div>
+    {% if results %}
+      <div class="card">
+        <h2 class="section-title">Result</h2>
+        <p>Threat Score: <strong>{{ results.score }}</strong></p>
+        <p>Recommended Action: <strong>{{ results.action }}</strong></p>
+        <h3 class="section-title mt-6">Matched Rules</h3>
+        {% if results.matches %}
+          <ul>
+            {% for match in results.matches %}
+              <li>{{ match.rule.name }} - +{{ match.rule.threat_score }} - {{ match.rule.action }} - {{ match.message }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-gray-500">No rules matched.</p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>
+

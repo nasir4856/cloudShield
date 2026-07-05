@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Security Rules</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    :root { --color-primary:#3498db; --color-danger:#e74c3c; --color-neutral:#ecf0f1; }
+    body { background:linear-gradient(135deg,#000,#1a1a1a); color:var(--color-neutral); font-family:Inter,system-ui,sans-serif; padding:2rem; }
+    .card { background:rgba(20,20,20,.9); border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,.5); padding:24px; margin-bottom:24px; border:1px solid rgba(52,152,219,.4); }
+    .section-title { font-weight:700; border-bottom:3px solid var(--color-primary); padding-bottom:12px; margin-bottom:18px; text-shadow:0 0 10px var(--color-primary); }
+    input,textarea,select { background:#2a2a2a; color:var(--color-neutral); border:2px solid #444; width:100%; padding:10px; border-radius:8px; }
+    label { display:block; margin-bottom:6px; color:#cbd5e0; }
+    .btn-block { background-color:var(--color-primary); color:white; border-radius:8px; padding:8px 14px; }
+    .btn-unblock { background-color:var(--color-danger); color:white; border-radius:8px; padding:8px 14px; }
+    .status-danger { color:var(--color-danger); }
+    table { width:100%; border-collapse:collapse; }
+    th,td { padding:12px; border-bottom:1px solid #333; text-align:left; vertical-align:top; }
+  </style>
+</head>
+<body>
+  <div class="container mx-auto">
+    <h1 class="text-4xl font-bold mb-8 text-center" style="text-shadow:0 0 10px var(--color-primary);">Security Rules</h1>
+    <div class="text-center mb-8">
+      <a href="{{ url_for('admin.admin_panel') }}" class="btn-block inline-block">Dashboard</a>
+      <a href="{{ url_for('admin.test_rule') }}" class="btn-block inline-block ml-2">Rule Tester</a>
+    </div>
+    {% if errors %}<div class="card">{% for error in errors %}<p class="status-danger">{{ error }}</p>{% endfor %}</div>{% endif %}
+    <div class="card">
+      <h2 class="section-title">Create Rule</h2>
+      <form method="POST" class="grid md:grid-cols-2 gap-4">
+        {{ csrf_field()|safe }}
+        <div><label>Name</label><input name="name" required></div>
+        <div><label>Type</label><select name="rule_type">{% for type in rule_types %}<option>{{ type }}</option>{% endfor %}</select></div>
+        <div class="md:col-span-2"><label>Description</label><textarea name="description" rows="2"></textarea></div>
+        <div class="md:col-span-2"><label>Pattern</label><textarea name="pattern" rows="2"></textarea></div>
+        <div class="md:col-span-2"><label>Condition JSON</label><textarea name="condition" rows="2">{}</textarea></div>
+        <div><label>Severity</label><select name="severity">{% for severity in severities %}<option>{{ severity }}</option>{% endfor %}</select></div>
+        <div><label>Action</label><select name="action">{% for action in actions %}<option>{{ action }}</option>{% endfor %}</select></div>
+        <div><label>Threat Score</label><input name="threat_score" value="10"></div>
+        <div><label>Priority</label><input name="priority" value="100"></div>
+        <div><label>Application</label><select name="application_id"><option value="">Global</option>{% for app in applications %}<option value="{{ app.id }}">{{ app.name }}</option>{% endfor %}</select></div>
+        <label><input type="checkbox" name="enabled" checked style="width:auto;"> Enabled</label>
+        <div class="md:col-span-2"><button class="btn-block" type="submit">Create Rule</button></div>
+      </form>
+    </div>
+    <div class="card">
+      <h2 class="section-title">Search & Filter</h2>
+      <form method="GET" class="grid md:grid-cols-4 gap-4">
+        <input name="search" value="{{ search }}" placeholder="Search rules">
+        <select name="rule_type"><option value="">All Types</option>{% for type in rule_types %}<option value="{{ type }}" {% if selected_type == type %}selected{% endif %}>{{ type }}</option>{% endfor %}</select>
+        <select name="enabled"><option value="">Any Status</option><option value="true" {% if selected_enabled == 'true' %}selected{% endif %}>Enabled</option><option value="false" {% if selected_enabled == 'false' %}selected{% endif %}>Disabled</option></select>
+        <button class="btn-block" type="submit">Filter</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2 class="section-title">Rule List</h2>
+      <table>
+        <thead><tr><th>Priority</th><th>Name</th><th>Type</th><th>Score</th><th>Action</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for rule in rules %}
+            <tr>
+              <td>{{ rule.priority }}</td><td>{{ rule.name }}</td><td>{{ rule.rule_type }}</td><td>{{ rule.threat_score }}</td><td>{{ rule.action }}</td><td>{{ 'Enabled' if rule.enabled else 'Disabled' }}</td>
+              <td>
+                <a class="btn-block inline-block" href="{{ url_for('admin.edit_rule', rule_id=rule.id) }}">Edit</a>
+                <form method="POST" action="{{ url_for('admin.toggle_rule', rule_id=rule.id) }}" class="inline-block">{{ csrf_field()|safe }}<button class="btn-block" type="submit">{{ 'Disable' if rule.enabled else 'Enable' }}</button></form>
+                <form method="POST" action="{{ url_for('admin.clone_security_rule', rule_id=rule.id) }}" class="inline-block">{{ csrf_field()|safe }}<button class="btn-block" type="submit">Clone</button></form>
+                <form method="POST" action="{{ url_for('admin.delete_rule', rule_id=rule.id) }}" class="inline-block">{{ csrf_field()|safe }}<button class="btn-unblock" type="submit">Delete</button></form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
+
