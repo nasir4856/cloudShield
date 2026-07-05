@@ -1,0 +1,31 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment files
+.env
+.env.*
+
+# Local databases and runtime data
+cloudshield.db
+blocked_ips.txt
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# IDE/editor files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
