@@ -29,11 +29,11 @@
   <section class="kpi-grid">
     {% set kpis = [
       {'label': 'Threat Level', 'value': threat_level, 'meta': 'Derived from current risk counts', 'icon': 'shield-alert', 'tone': 'danger' if threat_level == 'Critical' else 'warning' if threat_level in ['High', 'Elevated'] else 'safe'},
-      {'label': 'Protected Applications', 'value': 'Connect data', 'meta': 'Placeholder: app count will connect to registry', 'icon': 'server', 'tone': 'info'},
+      {'label': 'Protected Applications', 'value': protected_applications|length if protected_applications is defined else 0, 'meta': 'Configured protected applications in the registry', 'icon': 'server', 'tone': 'info'},
       {'label': 'Active Threats', 'value': active_threats, 'meta': critical_count ~ ' critical, ' ~ high_count ~ ' high, ' ~ suspicious_count ~ ' suspicious', 'icon': 'activity', 'tone': 'warning'},
       {'label': 'Blocked Requests Today', 'value': blocked_count, 'meta': 'Using current blocked IP list until daily counters exist', 'icon': 'ban', 'tone': 'danger'},
       {'label': 'Requests/sec', 'value': request_total, 'meta': 'Current one-second request window', 'icon': 'gauge', 'tone': 'info'},
-      {'label': 'Average Response Time', 'value': 'Pending', 'meta': 'Placeholder: proxy latency aggregation not yet connected', 'icon': 'timer', 'tone': 'neutral'}
+      {'label': 'Recent Events', 'value': recent_threats|length, 'meta': 'Threat detections recorded in the current window', 'icon': 'timer', 'tone': 'neutral'}
     ] %}
     {% for item in kpis %}
       {% include 'components/dashboard/kpi_card.html' %}

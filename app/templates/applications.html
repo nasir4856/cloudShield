@@ -116,8 +116,8 @@
           <span class="status-pill warning">Partial data</span>
         </div>
         <div class="ops-signal-list">
-          <div><span>Request Volume</span><strong>Pending</strong><small>Telemetry counter not connected to this view yet.</small></div>
-          <div><span>Threat Count</span><strong>Pending</strong><small>Application-scoped threat summary pending route data.</small></div>
+          <div><span>Request Volume</span><strong>{{ application_metrics.values()|map(attribute='request_volume')|sum if application_metrics else 0 }}</strong><small>Current application-scoped request count.</small></div>
+          <div><span>Threat Count</span><strong>{{ application_metrics.values()|map(attribute='threat_count')|sum if application_metrics else 0 }}</strong><small>Events matched to a rule in the current dataset.</small></div>
         </div>
       </div>
     </div>

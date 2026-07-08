@@ -44,8 +44,10 @@ from app.services.rule_service import (
     update_rule,
 )
 from app.services.threat_summary_service import (
+    application_activity_summary,
     recent_threats,
     risk_level_counts,
+    summarize_application_metrics,
     threat_distribution,
     top_triggered_rules,
 )
@@ -85,6 +87,11 @@ def admin_panel():
 
         return redirect(url_for("admin.admin_panel"))
 
+    protected_applications = ProtectedApplication.query.all()
+    healthy_apps = sum(1 for app in protected_applications if check_application_health(app).value == "Healthy")
+    degraded_apps = sum(1 for app in protected_applications if check_application_health(app).value in {"Timeout", "Unknown"})
+    offline_apps = sum(1 for app in protected_applications if check_application_health(app).value == "Offline")
+
     return render_template(
         "admin.html",
         ip_stats=rate_limiter.stats(),
@@ -94,6 +101,10 @@ def admin_panel():
         top_rules=top_triggered_rules(),
         threat_distribution=threat_distribution(),
         risk_counts=risk_level_counts(),
+        protected_applications=protected_applications,
+        healthy_apps=healthy_apps,
+        degraded_apps=degraded_apps,
+        offline_apps=offline_apps,
     )
 
 
@@ -122,10 +133,12 @@ def applications():
         application.id: check_application_health(application).value
         for application in protected_applications
     }
+    application_metrics = summarize_application_metrics(protected_applications)
     return render_template(
         "applications.html",
         applications=protected_applications,
         statuses=statuses,
+        application_metrics=application_metrics,
         errors=errors,
         tested=request.args.get("tested"),
         tested_status=request.args.get("status"),
@@ -152,9 +165,11 @@ def edit_application(application_id: int):
             create_audit_log("Edit Protected App", application.name, "success")
             return redirect(url_for("admin.applications"))
 
+    application_metrics = summarize_application_metrics([application])[application.id]
     return render_template(
         "application_form.html",
         application=application,
+        application_metrics=application_metrics,
         errors=errors,
     )
 
@@ -400,20 +415,39 @@ def security_events():
 @admin_bp.route("/admin/reports", methods=["GET"])
 @permission_required("export_reports")
 def reports():
+    protected_applications = ProtectedApplication.query.all()
     return render_template(
-        "placeholder_page.html",
+        "reports.html",
         page_title="Reports",
         active_page="reports",
+        events=SecurityEvent.query.order_by(SecurityEvent.created_at.desc()).limit(50).all(),
+        recent_threats=recent_threats(),
+        risk_counts=risk_level_counts(),
+        top_rules=top_triggered_rules(),
+        protected_applications=protected_applications,
+        application_activity=application_activity_summary(),
     )
 
 
 @admin_bp.route("/admin/monitoring", methods=["GET"])
 @permission_required("view_dashboard")
 def monitoring():
+    protected_applications = ProtectedApplication.query.all()
+    healthy_apps = sum(1 for app in protected_applications if check_application_health(app).value == "Healthy")
+    degraded_apps = sum(1 for app in protected_applications if check_application_health(app).value in {"Timeout", "Unknown"})
+    offline_apps = sum(1 for app in protected_applications if check_application_health(app).value == "Offline")
+    status_map = {application.id: check_application_health(application).value for application in protected_applications}
     return render_template(
-        "placeholder_page.html",
+        "monitoring.html",
         page_title="Monitoring",
         active_page="monitoring",
+        protected_applications=protected_applications,
+        healthy_apps=healthy_apps,
+        degraded_apps=degraded_apps,
+        offline_apps=offline_apps,
+        status_map=status_map,
+        recent_threats=recent_threats(),
+        top_rules=top_triggered_rules(),
     )
 
 

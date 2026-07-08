@@ -25,11 +25,11 @@
     </div>
     <div>
       <span>Request Volume</span>
-      <strong>Pending</strong>
+      <strong>{{ application_metrics[application.id]['request_volume'] if application_metrics and application.id in application_metrics else 0 }}</strong>
     </div>
     <div>
       <span>Threat Count</span>
-      <strong>Pending</strong>
+      <strong>{{ application_metrics[application.id]['threat_count'] if application_metrics and application.id in application_metrics else 0 }}</strong>
     </div>
   </div>
 

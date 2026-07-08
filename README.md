@@ -12,6 +12,34 @@ The latest milestone adds **Enterprise Identity & Access Management (IAM)**. Clo
 
 The current milestone adds the **Configurable Rule Engine**. Security detections are now database-backed `SecurityRule` records. Rules execute by priority, contribute to the final threat score, and recommend actions.
 
+## Product Showcase for Interviews
+
+CloudShield is a production-style security platform that I designed and implemented as a full-stack reverse-proxy WAF demo. The admin console gives a strong interview story because it combines architecture, security logic, and user experience in one working product.
+
+### Demo access
+
+Use these credentials to explore the live admin console locally:
+
+- Username: `admin`
+- Password: `admin123`
+
+### Screenshots
+
+![CloudShield dashboard](docs/screenshots/dashboard.png)
+
+![CloudShield monitoring view](docs/screenshots/monitoring.png)
+
+![CloudShield reports view](docs/screenshots/reports.png)
+
+![CloudShield applications management view](docs/screenshots/applications.png)
+
+### What these screens demonstrate
+
+- A real admin dashboard with live security metrics and threat posture summaries.
+- Monitoring workflows that surface application health, recent detections, and rule activity.
+- Reporting views that make the product feel operational rather than mock-only.
+- Protected application onboarding and management for a multi-tenant reverse-proxy flow.
+
 ## Current Features
 
 - Dynamic protected-application registry.
@@ -673,8 +701,16 @@ DATABASE_URL=sqlite:///cloudshield.db
 
 ## Running
 
+Use the failsafe launcher for the most robust startup experience:
+
 ```bash
-python run.py
+python failsafe_start.py
+```
+
+On Windows PowerShell, you can also use:
+
+```powershell
+./start.ps1
 ```
 
 Open:

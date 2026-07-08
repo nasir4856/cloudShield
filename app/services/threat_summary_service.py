@@ -1,6 +1,6 @@
 from sqlalchemy import func
 
-from app.models import SecurityEvent
+from app.models import ProtectedApplication, SecurityEvent
 
 
 def recent_threats(limit: int = 10) -> list[SecurityEvent]:
@@ -43,4 +43,29 @@ def risk_level_counts() -> dict[str, int]:
     for risk_level, count in threat_distribution():
         counts[risk_level] = count
     return counts
+
+
+def application_activity_summary(limit: int = 5) -> list[tuple[str, int]]:
+    return (
+        SecurityEvent.query.with_entities(
+            SecurityEvent.application_name,
+            func.count(SecurityEvent.id),
+        )
+        .filter(SecurityEvent.application_name.isnot(None))
+        .group_by(SecurityEvent.application_name)
+        .order_by(func.count(SecurityEvent.id).desc())
+        .limit(limit)
+        .all()
+    )
+
+
+def summarize_application_metrics(applications: list[ProtectedApplication]) -> dict[int, dict[str, int]]:
+    metrics: dict[int, dict[str, int]] = {}
+    for application in applications:
+        events = SecurityEvent.query.filter_by(application_id=application.id).all()
+        metrics[application.id] = {
+            "request_volume": len(events),
+            "threat_count": sum(1 for event in events if event.matched_rule is not None),
+        }
+    return metrics
 

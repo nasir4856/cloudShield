@@ -1,0 +1,115 @@
+{% extends 'layout.html' %}
+{% set page_title = 'Reports' %}
+{% set active_page = 'reports' %}
+{% block title %}Reports | CloudShield{% endblock %}
+
+{% block content %}
+<div class="ops-page">
+  <section class="ops-hero">
+    <div>
+      <p class="eyebrow">Operational Reporting</p>
+      <h2>Reports</h2>
+      <p>Current threat posture, event volume, and rule activity summaries from the live deployment.</p>
+    </div>
+    <div class="ops-summary">
+      <div><span>Events</span><strong>{{ events|length if events is defined else 0 }}</strong></div>
+      <div><span>Threats</span><strong>{{ recent_threats|length if recent_threats is defined else 0 }}</strong></div>
+      <div><span>Risk Levels</span><strong>{{ risk_counts|length if risk_counts is defined else 0 }}</strong></div>
+    </div>
+  </section>
+
+  <section class="soc-grid soc-grid-main">
+    {% include 'components/dashboard/threat_distribution.html' %}
+    <article class="soc-card">
+      <div class="card-header-row">
+        <div>
+          <h3>Threat Posture</h3>
+          <p>Snapshot of the current detection volume and protective coverage.</p>
+        </div>
+        <span class="status-pill warning">Live</span>
+      </div>
+      <div class="system-metrics">
+        <div><span>Critical</span><strong>{{ risk_counts.get('Critical', 0) if risk_counts else 0 }}</strong></div>
+        <div><span>High Risk</span><strong>{{ risk_counts.get('High Risk', 0) if risk_counts else 0 }}</strong></div>
+        <div><span>Suspicious</span><strong>{{ risk_counts.get('Suspicious', 0) if risk_counts else 0 }}</strong></div>
+        <div><span>Normal</span><strong>{{ risk_counts.get('Normal', 0) if risk_counts else 0 }}</strong></div>
+      </div>
+      <div class="action-row">
+        <a class="secondary-link" href="{{ url_for('admin.threat_explorer') }}">Open Threat Explorer</a>
+        <a class="secondary-link" href="{{ url_for('admin.monitoring') }}">Go to Monitoring</a>
+      </div>
+    </article>
+  </section>
+
+  <section class="soc-grid soc-grid-secondary">
+    <article class="soc-card">
+      <div class="card-header-row">
+        <div>
+          <h3>Application Activity</h3>
+          <p>Protected applications with the highest recent event volume.</p>
+        </div>
+        <i data-lucide="activity"></i>
+      </div>
+      {% if application_activity %}
+        <div class="dense-list">
+          {% for application_name, count in application_activity %}
+            <div class="dense-row app-row">
+              <span>{{ application_name }}</span>
+              <strong>{{ count }} events</strong>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">Traffic activity will appear here as soon as requests reach your protected applications.</div>
+      {% endif %}
+    </article>
+
+    <article class="soc-card">
+      <div class="card-header-row">
+        <div>
+          <h3>Rule Activity</h3>
+          <p>Most frequently triggered rules from the current policy set.</p>
+        </div>
+        <i data-lucide="shield-check"></i>
+      </div>
+      {% if top_rules %}
+        <div class="dense-list">
+          {% for rule, count in top_rules %}
+            <div class="dense-row app-row">
+              <span>{{ rule }}</span>
+              <strong>{{ count }} hits</strong>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">Rule activity will be populated as detections are triggered.</div>
+      {% endif %}
+    </article>
+  </section>
+
+  <section class="soc-grid soc-grid-main">
+    {% include 'components/dashboard/recent_events.html' %}
+    <article class="soc-card">
+      <div class="card-header-row">
+        <div>
+          <h3>Protected Applications</h3>
+          <p>Registered services currently available for inspection and reporting.</p>
+        </div>
+        <i data-lucide="server-cog"></i>
+      </div>
+      {% if protected_applications %}
+        <div class="dense-list">
+          {% for app in protected_applications %}
+            <div class="dense-row app-row">
+              <span>{{ app.name }}<small>{{ app.public_path }}</small></span>
+              <strong>{{ 'Enabled' if app.enabled else 'Disabled' }}</strong>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">No protected applications have been registered yet.</div>
+      {% endif %}
+    </article>
+  </section>
+</div>
+{% endblock %}

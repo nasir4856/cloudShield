@@ -84,8 +84,8 @@
           <span class="status-pill warning">Partial data</span>
         </div>
         <div class="system-metrics">
-          <div><span>Request Volume</span><strong>Pending</strong></div>
-          <div><span>Threat Count</span><strong>Pending</strong></div>
+          <div><span>Request Volume</span><strong>{{ application_metrics.request_volume if application_metrics else 0 }}</strong></div>
+          <div><span>Threat Count</span><strong>{{ application_metrics.threat_count if application_metrics else 0 }}</strong></div>
           <div><span>Rate Limit</span><strong>{{ application.rate_limit_per_minute }}/min</strong></div>
           <div><span>Burst Limit</span><strong>{{ application.burst_limit }}</strong></div>
         </div>

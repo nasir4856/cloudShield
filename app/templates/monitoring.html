@@ -1,0 +1,74 @@
+{% extends 'layout.html' %}
+{% set page_title = 'Monitoring' %}
+{% set active_page = 'monitoring' %}
+{% block title %}Monitoring | CloudShield{% endblock %}
+
+{% block content %}
+<div class="ops-page">
+  <section class="ops-hero">
+    <div>
+      <p class="eyebrow">Live Monitoring</p>
+      <h2>Monitoring</h2>
+      <p>Current runtime health, threat activity, and protection status for the deployed environment.</p>
+    </div>
+    <div class="ops-summary">
+      <div><span>Protected Apps</span><strong>{{ protected_applications|length if protected_applications is defined else 0 }}</strong></div>
+      <div><span>Healthy</span><strong>{{ healthy_apps if healthy_apps is defined else 0 }}</strong></div>
+      <div><span>Offline</span><strong>{{ offline_apps if offline_apps is defined else 0 }}</strong></div>
+    </div>
+  </section>
+
+  <section class="soc-grid soc-grid-main">
+    {% include 'components/dashboard/application_health.html' %}
+    {% include 'components/dashboard/threat_timeline.html' %}
+  </section>
+
+  <section class="soc-grid soc-grid-secondary">
+    <article class="soc-card">
+      <div class="card-header-row">
+        <div>
+          <h3>Protection Coverage</h3>
+          <p>Current routing and health state for each protected application.</p>
+        </div>
+        <span class="status-pill safe">Protected</span>
+      </div>
+      {% if protected_applications %}
+        <div class="dense-list">
+          {% for app in protected_applications %}
+            <div class="dense-row app-row">
+              <span>{{ app.name }}<small>{{ app.public_path }} → {{ app.upstream_url }}</small></span>
+              <strong>{{ status_map.get(app.id, 'Unknown') }}</strong>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">No protected applications are registered yet. Add one from the Applications screen to start monitoring inline.</div>
+      {% endif %}
+    </article>
+    {% include 'components/dashboard/top_rules.html' %}
+  </section>
+
+  <section class="soc-grid soc-grid-main">
+    {% include 'components/dashboard/recent_events.html' %}
+    <article class="soc-card">
+      <div class="card-header-row">
+        <div>
+          <h3>Operations Snapshot</h3>
+          <p>Immediate context for the security team while incidents are being investigated.</p>
+        </div>
+        <i data-lucide="radar"></i>
+      </div>
+      <div class="system-metrics">
+        <div><span>Recent threats</span><strong>{{ recent_threats|length if recent_threats is defined else 0 }}</strong></div>
+        <div><span>Rule hits</span><strong>{{ top_rules|length if top_rules is defined else 0 }}</strong></div>
+        <div><span>Healthy apps</span><strong>{{ healthy_apps if healthy_apps is defined else 0 }}</strong></div>
+        <div><span>Degraded/offline</span><strong>{{ degraded_apps + offline_apps if degraded_apps is defined and offline_apps is defined else 0 }}</strong></div>
+      </div>
+      <div class="action-row">
+        <a class="secondary-link" href="{{ url_for('admin.reports') }}">Open Reports</a>
+        <a class="secondary-link" href="{{ url_for('admin.rules') }}">Manage Rules</a>
+      </div>
+    </article>
+  </section>
+</div>
+{% endblock %}

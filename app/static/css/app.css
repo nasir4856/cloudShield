@@ -418,6 +418,40 @@ th, td { padding: 12px; border-bottom: 1px solid var(--border); text-align: left
 .status-pill.warning { color: var(--color-warning); }
 .status-pill.danger { color: var(--color-danger); }
 
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.secondary-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.secondary-link:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.empty-state {
+  padding: 14px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 .timeline-placeholder {
   height: 260px;
   display: grid;
@@ -493,6 +527,21 @@ th, td { padding: 12px; border-bottom: 1px solid var(--border); text-align: left
 
 .dense-row {
   grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.dense-row span {
+  display: grid;
+  gap: 4px;
+}
+
+.dense-row small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.app-row strong {
+  font-size: 13px;
+  color: var(--text-primary);
 }
 
 .event-row {

@@ -2,23 +2,22 @@
   <div class="card-header-row">
     <div>
       <h3>Threat Timeline</h3>
-      <p>Placeholder timeline prepared for time-series threat data.</p>
+      <p>Recent threat activity from the stored security events.</p>
     </div>
-    <span class="status-pill neutral">Chart placeholder</span>
+    <span class="status-pill neutral">Live</span>
   </div>
-  <div class="timeline-placeholder" aria-label="Threat timeline placeholder">
-    <div class="timeline-bar h-35"></div>
-    <div class="timeline-bar h-55"></div>
-    <div class="timeline-bar h-42"></div>
-    <div class="timeline-bar h-72"></div>
-    <div class="timeline-bar h-50"></div>
-    <div class="timeline-bar h-64"></div>
-    <div class="timeline-bar h-38"></div>
-    <div class="timeline-bar h-46"></div>
-    <div class="timeline-bar h-58"></div>
-    <div class="timeline-bar h-40"></div>
-    <div class="timeline-bar h-68"></div>
-    <div class="timeline-bar h-44"></div>
-  </div>
+  {% set timeline_points = [] %}
+  {% for threat in recent_threats[:12] %}
+    {% set _ = timeline_points.append((threat.created_at.strftime('%H:%M') if threat.created_at else 'Now', 35 + ((threat.threat_score or 0) % 6) * 8)) %}
+  {% endfor %}
+  {% if timeline_points %}
+    <div class="timeline-placeholder" aria-label="Threat timeline">
+      {% for label, height in timeline_points %}
+        <div class="timeline-bar" style="height: {{ height }}%;" title="{{ label }}"></div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="placeholder-copy">No threat data recorded yet.</p>
+  {% endif %}
 </article>
 
