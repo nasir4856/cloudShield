@@ -1,0 +1,22 @@
+<article class="soc-card">
+  <div class="card-header-row">
+    <div>
+      <h3>Top Triggered Rules</h3>
+      <p>Highest-volume detections from existing rule data.</p>
+    </div>
+    <i data-lucide="shield-alert"></i>
+  </div>
+  {% if top_rules %}
+    <div class="dense-list">
+      {% for rule, count in top_rules %}
+        <div class="dense-row">
+          <span>{{ rule }}</span>
+          <strong>{{ count }}</strong>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="placeholder-copy">No rule triggers yet.</p>
+  {% endif %}
+</article>
+

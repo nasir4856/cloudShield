@@ -1,0 +1,41 @@
+{% extends 'layout.html' %}
+{% set page_title = 'Threat Explorer' %}
+{% set active_page = 'threat_explorer' %}
+{% block title %}Threat Explorer | CloudShield{% endblock %}
+
+{% block content %}
+<div class="investigation-page">
+  <section class="investigation-hero">
+    <div>
+      <p class="eyebrow">Threat Investigation</p>
+      <h2>Threat Explorer</h2>
+      <p>Search, filter, and inspect security detections across protected applications.</p>
+    </div>
+    <div class="investigation-summary">
+      <div><span>Events Shown</span><strong>{{ events|length }}</strong></div>
+      <div><span>Critical</span><strong>{{ events|selectattr('risk_level', 'equalto', 'Critical')|list|length }}</strong></div>
+      <div><span>High Risk</span><strong>{{ events|selectattr('risk_level', 'equalto', 'High Risk')|list|length }}</strong></div>
+    </div>
+  </section>
+
+  {% include 'components/investigation/filter_bar.html' %}
+
+  <section class="investigation-workspace">
+    <div class="soc-card investigation-list-card">
+      <div class="card-header-row">
+        <div>
+          <h3>Detected Threats</h3>
+          <p>Click any event to open the investigation panel.</p>
+        </div>
+        <span class="status-pill">Live data</span>
+      </div>
+      {% include 'components/investigation/event_table.html' %}
+    </div>
+    {% include 'components/investigation/panel.html' %}
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {% include 'components/investigation/panel_script.html' %}
+{% endblock %}

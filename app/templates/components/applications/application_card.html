@@ -1,0 +1,61 @@
+{% set health_tone = 'safe' if status == 'Healthy' else 'warning' if status in ['Timeout', 'Unknown'] else 'danger' %}
+<article class="app-ops-card">
+  <div class="app-card-header">
+    <div>
+      <p class="eyebrow">{{ application.public_path }}</p>
+      <h3>{{ application.name }}</h3>
+      <p>{{ application.description or 'No description provided.' }}</p>
+    </div>
+    <span class="health-dot {{ health_tone }}" title="{{ status }}"></span>
+  </div>
+
+  <div class="app-status-row">
+    <span class="status-pill {{ health_tone }}">{{ status }}</span>
+    <span class="status-pill {{ 'safe' if application.enabled else 'danger' }}">{{ 'Enabled' if application.enabled else 'Disabled' }}</span>
+  </div>
+
+  <div class="app-meta-grid">
+    <div>
+      <span>Upstream URL</span>
+      <code>{{ application.upstream_url }}</code>
+    </div>
+    <div>
+      <span>Last Health Check</span>
+      <strong>Current page load</strong>
+    </div>
+    <div>
+      <span>Request Volume</span>
+      <strong>Pending</strong>
+    </div>
+    <div>
+      <span>Threat Count</span>
+      <strong>Pending</strong>
+    </div>
+  </div>
+
+  <div class="app-policy-row">
+    <span><i data-lucide="gauge"></i>{{ application.rate_limit_per_minute }}/min</span>
+    <span><i data-lucide="waves"></i>Burst {{ application.burst_limit }}</span>
+    <span><i data-lucide="shield-check"></i>{{ 'CAPTCHA on' if application.captcha_enabled else 'CAPTCHA off' }}</span>
+    <span><i data-lucide="mail"></i>{{ 'Alerts on' if application.email_alerts else 'Alerts off' }}</span>
+  </div>
+
+  <div class="app-actions">
+    <a href="{{ url_for('admin.edit_application', application_id=application.id) }}" class="ghost-button">
+      <i data-lucide="panel-right-open"></i>
+      Details
+    </a>
+    <form method="POST" action="{{ url_for('admin.toggle_application', application_id=application.id) }}">
+      {{ csrf_field()|safe }}
+      <button type="submit" class="btn-block">{{ 'Disable' if application.enabled else 'Enable' }}</button>
+    </form>
+    <form method="POST" action="{{ url_for('admin.test_application', application_id=application.id) }}">
+      {{ csrf_field()|safe }}
+      <button type="submit" class="btn-block">Test Connection</button>
+    </form>
+    <form method="POST" action="{{ url_for('admin.delete_application', application_id=application.id) }}">
+      {{ csrf_field()|safe }}
+      <button type="submit" class="btn-unblock">Delete</button>
+    </form>
+  </div>
+</article>

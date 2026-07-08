@@ -1,0 +1,26 @@
+<article class="soc-card">
+  <div class="card-header-row">
+    <div>
+      <h3>Recent Security Events</h3>
+      <p>Latest detections produced by the Threat Engine.</p>
+    </div>
+    <i data-lucide="list-warning"></i>
+  </div>
+  {% if recent_threats %}
+    <div class="event-list">
+      {% for threat in recent_threats[:6] %}
+        <div class="event-row">
+          <span class="event-severity {{ 'danger' if threat.risk_level == 'Critical' else 'warning' if threat.risk_level in ['Suspicious', 'High Risk'] else 'safe' }}"></span>
+          <div>
+            <strong>{{ threat.matched_rule }}</strong>
+            <small>{{ threat.application_name or 'Unknown App' }} · {{ threat.ip_address }} · Score {{ threat.threat_score }}</small>
+          </div>
+          <time>{{ threat.created_at.strftime('%H:%M:%S') }}</time>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="placeholder-copy">No recent security events.</p>
+  {% endif %}
+</article>
+

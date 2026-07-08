@@ -1,25 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Audit Logs</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <style>
-    :root { --color-primary:#3498db; --color-neutral:#ecf0f1; }
-    body { background:linear-gradient(135deg,#000,#1a1a1a); color:var(--color-neutral); font-family:Inter,system-ui,sans-serif; padding:2rem; }
-    .card { background:rgba(20,20,20,.9); border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,.5); padding:24px; margin-bottom:24px; border:1px solid rgba(52,152,219,.4); }
-    .section-title { font-weight:700; border-bottom:3px solid var(--color-primary); padding-bottom:12px; margin-bottom:18px; text-shadow:0 0 10px var(--color-primary); }
-    .btn-block { background-color:var(--color-primary); color:white; border-radius:8px; padding:8px 14px; }
-    table { width:100%; border-collapse:collapse; }
-    th,td { padding:12px; border-bottom:1px solid #333; text-align:left; vertical-align:top; }
-  </style>
-</head>
-<body>
-  <div class="container mx-auto">
+﻿{% extends 'layout.html' %}
+{% set page_title = 'Audit Logs' %}
+{% set active_page = 'audit_logs' %}
+{% block title %}Audit Logs | CloudShield{% endblock %}
+{% block content %}
+<div class="container mx-auto">
     <h1 class="text-4xl font-bold mb-8 text-center" style="text-shadow:0 0 10px var(--color-primary);">Audit Logs</h1>
-    <div class="text-center mb-8"><a href="{{ url_for('admin.admin_panel') }}" class="btn-block inline-block">Dashboard</a></div>
-    <div class="card">
+<div class="card">
       <h2 class="section-title">Recent Administrative Actions</h2>
       <table>
         <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Resource</th><th>IP</th><th>Status</th></tr></thead>
@@ -31,6 +17,6 @@
       </table>
     </div>
   </div>
-</body>
-</html>
+{% endblock %}
+
 

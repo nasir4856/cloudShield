@@ -1,0 +1,25 @@
+<article class="soc-card">
+  <div class="card-header-row">
+    <div>
+      <h3>Threat Distribution</h3>
+      <p>Current event spread by risk level.</p>
+    </div>
+    <i data-lucide="pie-chart"></i>
+  </div>
+  <div class="distribution-list">
+    {% if risk_counts %}
+      {% for level, count in risk_counts.items() %}
+        <div class="distribution-row">
+          <span>{{ level }}</span>
+          <div class="distribution-track">
+            <div class="distribution-fill {{ 'danger' if level == 'Critical' else 'warning' if level in ['Suspicious', 'High Risk'] else 'safe' }}" style="width: {{ [count * 12, 100]|min }}%;"></div>
+          </div>
+          <strong>{{ count }}</strong>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="placeholder-copy">No threat distribution data recorded yet.</p>
+    {% endif %}
+  </div>
+</article>
+

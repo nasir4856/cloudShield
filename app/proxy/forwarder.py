@@ -1,5 +1,7 @@
 import logging
+import re
 import time
+from urllib.parse import urljoin, urlparse
 
 import requests
 from flask import Response, current_app, redirect, request
@@ -8,6 +10,7 @@ from app.models import ProtectedApplication
 
 
 logger = logging.getLogger(__name__)
+HTML_URL_ATTRIBUTES = ("href", "src", "action")
 
 
 def forward_request(
@@ -51,8 +54,8 @@ def forward_request(
             elapsed_ms,
         )
 
-        if response.status_code == 302 and "Location" in response.headers:
-            return redirect(response.headers["Location"])
+        if response.is_redirect and "Location" in response.headers:
+            return redirect(_rewrite_redirect_location(application, response.headers["Location"]))
 
         excluded_headers = {
             "content-encoding",
@@ -60,12 +63,16 @@ def forward_request(
             "transfer-encoding",
             "connection",
         }
+        body = response.content
         response_headers = [
             (name, value)
             for name, value in response.headers.items()
             if name.lower() not in excluded_headers
         ]
-        return response.content, response.status_code, response_headers
+        if _is_html_response(response):
+            body = _rewrite_html_body(response, application)
+
+        return body, response.status_code, response_headers
     except requests.ConnectionError:
         logger.exception("Failed to connect to upstream application %s.", application.name)
         return Response(
@@ -87,3 +94,61 @@ def forward_request(
             502,
             mimetype="application/json",
         )
+
+
+def _is_html_response(response: requests.Response) -> bool:
+    return "text/html" in response.headers.get("Content-Type", "").lower()
+
+
+def _rewrite_redirect_location(application: ProtectedApplication, location: str) -> str:
+    upstream_base = application.upstream_url.rstrip("/")
+    public_path = application.public_path.rstrip("/") or "/"
+    parsed_location = urlparse(location)
+
+    if parsed_location.scheme and location.startswith(upstream_base):
+        suffix = location[len(upstream_base) :].lstrip("/")
+        return f"{public_path}/{suffix}" if suffix else public_path
+
+    if location.startswith("/") and not location.startswith("//"):
+        return _with_public_path(public_path, location)
+
+    return location
+
+
+def _rewrite_html_body(
+    response: requests.Response,
+    application: ProtectedApplication,
+) -> bytes:
+    public_path = application.public_path.rstrip("/") or "/"
+    if public_path == "/":
+        return response.content
+
+    encoding = response.encoding or "utf-8"
+    html = response.text
+
+    for attribute in HTML_URL_ATTRIBUTES:
+        html = re.sub(
+            rf'({attribute}\s*=\s*["\'])(/[^/"\'][^"\']*)',
+            lambda match: (
+                f"{match.group(1)}{_with_public_path(public_path, match.group(2))}"
+            ),
+            html,
+            flags=re.IGNORECASE,
+        )
+
+    html = re.sub(
+        r'(url\(\s*["\']?)(/[^/)"\'][^)"\']*)',
+        lambda match: (
+            f"{match.group(1)}{_with_public_path(public_path, match.group(2))}"
+        ),
+        html,
+        flags=re.IGNORECASE,
+    )
+
+    return html.encode(encoding, errors="replace")
+
+
+def _with_public_path(public_path: str, target_path: str) -> str:
+    if target_path == public_path or target_path.startswith(f"{public_path}/"):
+        return target_path
+    return urljoin(f"{public_path}/", target_path.lstrip("/"))

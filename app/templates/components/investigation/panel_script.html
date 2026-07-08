@@ -1,0 +1,83 @@
+<script>
+  (function () {
+    const rows = Array.from(document.querySelectorAll(".investigation-row"));
+    const empty = document.getElementById("investigationEmpty");
+    const content = document.getElementById("investigationContent");
+    const related = document.getElementById("panelRelated");
+    const riskTone = {
+      "Critical": "danger",
+      "High Risk": "warning",
+      "Suspicious": "warning",
+      "Normal": "safe"
+    };
+
+    function setText(id, value) {
+      const element = document.getElementById(id);
+      if (element) element.textContent = value || "Unknown";
+    }
+
+    function renderRelated(selectedRow) {
+      if (!related) return;
+      const selectedIp = selectedRow.dataset.ip;
+      const selectedId = selectedRow.dataset.eventId;
+      const matches = rows
+        .filter((row) => row.dataset.ip === selectedIp && row.dataset.eventId !== selectedId)
+        .slice(0, 4);
+
+      if (!matches.length) {
+        related.innerHTML = '<p class="placeholder-copy">No related events are visible in the current result set.</p>';
+        return;
+      }
+
+      related.innerHTML = matches.map((row) => `
+        <button class="related-event-button" type="button" data-related-id="${row.dataset.eventId}">
+          <span>${row.dataset.created}</span>
+          <strong>${row.dataset.rule}</strong>
+          <small>${row.dataset.action} - Score ${row.dataset.score}</small>
+        </button>
+      `).join("");
+    }
+
+    function openInvestigation(row) {
+      rows.forEach((item) => item.classList.toggle("selected", item === row));
+      if (empty) empty.hidden = true;
+      if (content) content.hidden = false;
+
+      setText("panelRule", row.dataset.rule);
+      setText("panelScore", row.dataset.score);
+      setText("panelIp", row.dataset.ip);
+      setText("panelApplication", row.dataset.application);
+      setText("panelAction", row.dataset.action);
+      setText("panelUserAgent", row.dataset.userAgent);
+      setText("panelPath", row.dataset.path);
+      setText("panelMessage", row.dataset.message);
+      setText("panelCreated", row.dataset.created);
+      setText("panelTimelineAction", `${row.dataset.action} action taken`);
+
+      const panelRisk = document.getElementById("panelRisk");
+      if (panelRisk) {
+        panelRisk.textContent = row.dataset.risk;
+        panelRisk.className = `severity-badge ${riskTone[row.dataset.risk] || ""}`;
+      }
+
+      renderRelated(row);
+    }
+
+    rows.forEach((row) => {
+      row.addEventListener("click", () => openInvestigation(row));
+      row.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openInvestigation(row);
+        }
+      });
+    });
+
+    related?.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-related-id]");
+      if (!button) return;
+      const row = rows.find((item) => item.dataset.eventId === button.dataset.relatedId);
+      if (row) openInvestigation(row);
+    });
+  })();
+</script>

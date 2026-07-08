@@ -1,0 +1,51 @@
+{% set active_page = active_page|default('dashboard') %}
+<div class="sidebar-brand">
+  <a href="{{ url_for('admin.admin_panel') }}" class="brand-link">
+    <span class="brand-mark">CS</span>
+    <span class="brand-copy">
+      <strong>CloudShield</strong>
+      <small>Enterprise WAF</small>
+    </span>
+  </a>
+</div>
+
+<nav class="sidebar-nav" aria-label="Primary navigation">
+  <a class="nav-link {{ 'active' if active_page == 'dashboard' else '' }}" href="{{ url_for('admin.admin_panel') }}">
+    <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+  </a>
+  <a class="nav-link {{ 'active' if active_page == 'applications' else '' }}" href="{{ url_for('admin.applications') }}">
+    <i data-lucide="server"></i><span>Protected Applications</span>
+  </a>
+  <a class="nav-link {{ 'active' if active_page == 'threat_explorer' else '' }}" href="{{ url_for('admin.threat_explorer') }}">
+    <i data-lucide="search"></i><span>Threat Explorer</span>
+  </a>
+  <a class="nav-link {{ 'active' if active_page == 'rules' else '' }}" href="{{ url_for('admin.rules') }}">
+    <i data-lucide="shield-alert"></i><span>Rule Engine</span>
+  </a>
+  <a class="nav-link {{ 'active' if active_page == 'security_events' else '' }}" href="{{ url_for('admin.security_events') }}">
+    <i data-lucide="alert-triangle"></i><span>Security Events</span>
+  </a>
+  <a class="nav-link {{ 'active' if active_page == 'reports' else '' }}" href="{{ url_for('admin.reports') }}">
+    <i data-lucide="file-text"></i><span>Reports</span>
+  </a>
+  <div class="nav-divider"></div>
+  <a class="nav-link {{ 'active' if active_page == 'users' else '' }}" href="{{ url_for('admin.users') }}">
+    <i data-lucide="users"></i><span>Users</span>
+  </a>
+  <a class="nav-link {{ 'active' if active_page == 'roles' else '' }}" href="{{ url_for('admin.roles') }}">
+    <i data-lucide="user-cog"></i><span>Roles</span>
+  </a>
+  <a class="nav-link {{ 'active' if active_page == 'api_keys' else '' }}" href="{{ url_for('admin.api_keys') }}">
+    <i data-lucide="key-round"></i><span>API Keys</span>
+  </a>
+  <a class="nav-link {{ 'active' if active_page == 'audit_logs' else '' }}" href="{{ url_for('admin.audit_logs') }}">
+    <i data-lucide="clipboard-list"></i><span>Audit Logs</span>
+  </a>
+  <div class="nav-divider"></div>
+  <a class="nav-link {{ 'active' if active_page == 'monitoring' else '' }}" href="{{ url_for('admin.monitoring') }}">
+    <i data-lucide="activity"></i><span>Monitoring</span>
+  </a>
+  <a class="nav-link {{ 'active' if active_page == 'settings' else '' }}" href="{{ url_for('admin.settings') }}">
+    <i data-lucide="settings"></i><span>Settings</span>
+  </a>
+</nav>

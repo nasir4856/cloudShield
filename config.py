@@ -1,11 +1,13 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 
 
 BASE_DIR = Path(__file__).resolve().parent
+INSTANCE_DIR = BASE_DIR / "instance"
 load_dotenv(BASE_DIR / ".env")
 
 
@@ -19,16 +21,36 @@ def _int_env(name: str, default: int) -> int:
         return default
 
 
+def _database_uri() -> str:
+    configured = os.getenv("DATABASE_URL", "sqlite:///cloudshield.db")
+    parsed = urlparse(configured)
+    if parsed.scheme != "sqlite":
+        return configured
+
+    if configured == "sqlite:///:memory:":
+        return configured
+
+    prefix = "sqlite:///"
+    if not configured.startswith(prefix):
+        return configured
+
+    database_path = configured[len(prefix) :]
+    if database_path.startswith("/"):
+        path = Path(database_path)
+    else:
+        path = INSTANCE_DIR / database_path
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return f"sqlite:///{path.as_posix()}"
+
+
 class Config:
     """Application configuration loaded from environment variables."""
 
     APP_NAME = "CloudShield"
     SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-key")
 
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        "DATABASE_URL",
-        f"sqlite:///{BASE_DIR / 'cloudshield.db'}",
-    )
+    SQLALCHEMY_DATABASE_URI = _database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")

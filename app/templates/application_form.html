@@ -1,119 +1,179 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Edit Protected Application</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <style>
-    :root {
-      --color-primary: #3498db;
-      --color-danger: #e74c3c;
-      --color-neutral: #ecf0f1;
-    }
-    body {
-      background: linear-gradient(135deg, #000000, #1a1a1a);
-      color: var(--color-neutral);
-      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      padding: 2rem;
-    }
-    .card {
-      background: rgba(20, 20, 20, 0.9);
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-      padding: 24px;
-      margin-bottom: 24px;
-      border: 1px solid rgba(52, 152, 219, 0.4);
-    }
-    .section-title {
-      color: var(--color-neutral);
-      font-weight: 700;
-      border-bottom: 3px solid var(--color-primary);
-      padding-bottom: 12px;
-      margin-bottom: 18px;
-      text-shadow: 0 0 10px var(--color-primary);
-    }
-    input, textarea {
-      background: #2a2a2a;
-      color: var(--color-neutral);
-      border: 2px solid #444;
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-    }
-    label { display: block; margin-bottom: 6px; color: #cbd5e0; }
-    .btn-block {
-      background-color: var(--color-primary);
-      color: white;
-      border-radius: 8px;
-      padding: 8px 14px;
-    }
-    .btn-unblock {
-      background-color: var(--color-danger);
-      color: white;
-      border-radius: 8px;
-      padding: 8px 14px;
-    }
-    .status-danger { color: var(--color-danger); }
-  </style>
-</head>
-<body>
-  <div class="container mx-auto">
-    <h1 class="text-4xl font-bold mb-8 text-center" style="text-shadow: 0 0 10px var(--color-primary);">
-      Edit Protected Application
-    </h1>
-    <div class="text-center mb-8">
-      <a href="{{ url_for('admin.applications') }}" class="btn-block inline-block">Protected Applications</a>
-    </div>
+{% extends 'layout.html' %}
+{% set page_title = 'Application Details' %}
+{% set active_page = 'applications' %}
+{% block title %}Application Details | CloudShield{% endblock %}
 
-    {% if errors %}
-      <div class="card">
-        <h2 class="section-title">Validation Errors</h2>
-        <ul>
-          {% for error in errors %}
-            <li class="status-danger">{{ error }}</li>
-          {% endfor %}
-        </ul>
+{% block content %}
+<div class="ops-page">
+  <section class="ops-hero">
+    <div>
+      <p class="eyebrow">Application Details</p>
+      <h2>{{ application.name }}</h2>
+      <p>{{ application.description or 'Operational profile and configuration for this protected application.' }}</p>
+    </div>
+    <div class="ops-summary">
+      <div><span>Public Path</span><strong>{{ application.public_path }}</strong></div>
+      <div><span>Status</span><strong class="{{ 'status-safe' if application.enabled else 'status-danger' }}">{{ 'Enabled' if application.enabled else 'Disabled' }}</strong></div>
+      <div><span>Updated</span><strong>{{ application.updated_at.strftime('%Y-%m-%d') if application.updated_at else 'Unknown' }}</strong></div>
+    </div>
+  </section>
+
+  {% if errors %}
+    <section class="soc-card alert-card">
+      <div class="card-header-row">
+        <div>
+          <h3>Validation Errors</h3>
+          <p>Review the configuration and save again.</p>
+        </div>
       </div>
-    {% endif %}
+      <ul class="compact-error-list">
+        {% for error in errors %}
+          <li class="status-danger">{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
 
-    <div class="card">
-      <h2 class="section-title">{{ application.name }}</h2>
-      <form method="POST" class="grid md:grid-cols-2 gap-4">
-        {{ csrf_field()|safe }}
-        <div>
-          <label>Name</label>
-          <input type="text" name="name" value="{{ application.name }}" required>
+  <section class="application-detail-grid">
+    <div class="application-detail-main">
+      <div class="ops-tabs" aria-label="Application detail sections">
+        <a href="#overview">Overview</a>
+        <a href="#health">Health</a>
+        <a href="#runtime">Runtime</a>
+        <a href="#threats">Recent Threats</a>
+        <a href="#rules">Applied Rules</a>
+        <a href="#configuration">Configuration</a>
+      </div>
+
+      <section class="soc-card" id="overview">
+        <div class="card-header-row">
+          <div>
+            <h3>Overview</h3>
+            <p>Routing and ownership summary.</p>
+          </div>
+          <span class="status-pill {{ 'safe' if application.enabled else 'danger' }}">{{ 'Enabled' if application.enabled else 'Disabled' }}</span>
         </div>
-        <div>
-          <label>Public Path</label>
-          <input type="text" name="public_path" value="{{ application.public_path }}" required>
+        <div class="app-meta-grid wide">
+          <div><span>Name</span><strong>{{ application.name }}</strong></div>
+          <div><span>Public Path</span><code>{{ application.public_path }}</code></div>
+          <div><span>Upstream URL</span><code>{{ application.upstream_url }}</code></div>
+          <div><span>Created</span><strong>{{ application.created_at.strftime('%Y-%m-%d %H:%M:%S') if application.created_at else 'Unknown' }}</strong></div>
         </div>
-        <div class="md:col-span-2">
-          <label>Upstream URL</label>
-          <input type="text" name="upstream_url" value="{{ application.upstream_url }}" required>
+      </section>
+
+      <section class="soc-card" id="health">
+        <div class="card-header-row">
+          <div>
+            <h3>Health</h3>
+            <p>Health status is checked from the operations list and test action.</p>
+          </div>
+          <span class="status-pill warning">On demand</span>
         </div>
-        <div class="md:col-span-2">
-          <label>Description</label>
-          <textarea name="description" rows="2">{{ application.description or '' }}</textarea>
+        <div class="ops-signal-list">
+          <div><span>Last Health Check</span><strong>Available from applications console</strong><small>Use Test Connection from the card to refresh status.</small></div>
+          <div><span>Backend Reachability</span><strong>Pending check</strong><small>No new backend call is made from this details template.</small></div>
         </div>
-        <div>
-          <label>Rate Limit Per Minute</label>
-          <input type="text" name="rate_limit_per_minute" value="{{ application.rate_limit_per_minute }}">
+      </section>
+
+      <section class="soc-card" id="runtime">
+        <div class="card-header-row">
+          <div>
+            <h3>Runtime</h3>
+            <p>Traffic and policy runtime indicators.</p>
+          </div>
+          <span class="status-pill warning">Partial data</span>
         </div>
-        <div>
-          <label>Burst Limit</label>
-          <input type="text" name="burst_limit" value="{{ application.burst_limit }}">
+        <div class="system-metrics">
+          <div><span>Request Volume</span><strong>Pending</strong></div>
+          <div><span>Threat Count</span><strong>Pending</strong></div>
+          <div><span>Rate Limit</span><strong>{{ application.rate_limit_per_minute }}/min</strong></div>
+          <div><span>Burst Limit</span><strong>{{ application.burst_limit }}</strong></div>
         </div>
-        <label><input type="checkbox" name="enabled" {% if application.enabled %}checked{% endif %} style="width:auto;"> Enabled</label>
-        <label><input type="checkbox" name="captcha_enabled" {% if application.captcha_enabled %}checked{% endif %} style="width:auto;"> CAPTCHA Enabled</label>
-        <label><input type="checkbox" name="email_alerts" {% if application.email_alerts %}checked{% endif %} style="width:auto;"> Email Alerts</label>
-        <div class="md:col-span-2">
-          <button type="submit" class="btn-block">Save Changes</button>
-          <a href="{{ url_for('admin.applications') }}" class="btn-unblock inline-block ml-2">Cancel</a>
+      </section>
+
+      <section class="soc-card" id="threats">
+        <div class="card-header-row">
+          <div>
+            <h3>Recent Threats</h3>
+            <p>Application-scoped threat feed placeholder.</p>
+          </div>
+          <a class="ghost-button" href="{{ url_for('admin.threat_explorer') }}">Open Threat Explorer</a>
         </div>
-      </form>
+        <p class="placeholder-copy">Threat data exists in SecurityEvent records. This details view will display scoped events once the route provides application-specific event data.</p>
+      </section>
+
+      <section class="soc-card" id="rules">
+        <div class="card-header-row">
+          <div>
+            <h3>Applied Rules</h3>
+            <p>Global and application-specific policy coverage.</p>
+          </div>
+          <a class="ghost-button" href="{{ url_for('admin.rules') }}">Open Rule Engine</a>
+        </div>
+        <p class="placeholder-copy">Applied rule listing is prepared for future route data. Current rule management remains available in Rule Engine.</p>
+      </section>
+
+      <section class="soc-card" id="configuration">
+        <div class="card-header-row">
+          <div>
+            <h3>Configuration</h3>
+            <p>Edit routing, limits, challenge behavior, and alerting.</p>
+          </div>
+        </div>
+        <form method="POST" class="ops-form">
+          {{ csrf_field()|safe }}
+          <div>
+            <label>Name</label>
+            <input type="text" name="name" value="{{ application.name }}" required>
+          </div>
+          <div>
+            <label>Public Path</label>
+            <input type="text" name="public_path" value="{{ application.public_path }}" required>
+          </div>
+          <div class="full-field">
+            <label>Upstream URL</label>
+            <input type="text" name="upstream_url" value="{{ application.upstream_url }}" required>
+          </div>
+          <div class="full-field">
+            <label>Description</label>
+            <textarea name="description" rows="2">{{ application.description or '' }}</textarea>
+          </div>
+          <div>
+            <label>Rate Limit Per Minute</label>
+            <input type="text" name="rate_limit_per_minute" value="{{ application.rate_limit_per_minute }}">
+          </div>
+          <div>
+            <label>Burst Limit</label>
+            <input type="text" name="burst_limit" value="{{ application.burst_limit }}">
+          </div>
+          <div class="ops-toggle-row">
+            <label><input type="checkbox" name="enabled" {% if application.enabled %}checked{% endif %}> Enabled</label>
+            <label><input type="checkbox" name="captcha_enabled" {% if application.captcha_enabled %}checked{% endif %}> CAPTCHA</label>
+            <label><input type="checkbox" name="email_alerts" {% if application.email_alerts %}checked{% endif %}> Email Alerts</label>
+          </div>
+          <div class="full-field form-actions-row">
+            <button type="submit" class="btn-block">Save Changes</button>
+            <a href="{{ url_for('admin.applications') }}" class="ghost-button">Back to Applications</a>
+          </div>
+        </form>
+      </section>
     </div>
-  </div>
-</body>
-</html>
+
+    <aside class="application-detail-side">
+      <div class="soc-card">
+        <div class="card-header-row">
+          <div>
+            <h3>Operational Profile</h3>
+            <p>Current protection posture.</p>
+          </div>
+        </div>
+        <div class="ops-signal-list">
+          <div><span>CAPTCHA</span><strong>{{ 'Enabled' if application.captcha_enabled else 'Disabled' }}</strong></div>
+          <div><span>Email Alerts</span><strong>{{ 'Enabled' if application.email_alerts else 'Disabled' }}</strong></div>
+          <div><span>Public Route</span><code>{{ application.public_path }}</code></div>
+        </div>
+      </div>
+    </aside>
+  </section>
+</div>
+{% endblock %}

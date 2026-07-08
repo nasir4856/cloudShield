@@ -1,0 +1,59 @@
+<div class="investigation-table-wrap">
+  <table class="investigation-table">
+    <thead>
+      <tr>
+        {% if selectable|default(false) %}
+          <th class="check-cell"><input type="checkbox" aria-label="Select all events" disabled></th>
+        {% endif %}
+        <th>Severity</th>
+        <th>Score</th>
+        <th>Rule Matched</th>
+        <th>Source IP</th>
+        <th>Application</th>
+        <th>Request Path</th>
+        <th>Action</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in events %}
+        {% set risk = event.risk_level or 'Unknown' %}
+        {% set tone = 'danger' if risk == 'Critical' else 'warning' if risk in ['High Risk', 'Suspicious'] else 'safe' %}
+        <tr
+          class="investigation-row"
+          tabindex="0"
+          data-event-id="{{ event.id }}"
+          data-score="{{ event.threat_score or 0 }}"
+          data-risk="{{ risk }}"
+          data-rule="{{ event.matched_rule or 'No rule recorded' }}"
+          data-path="{{ event.request_path or 'Not captured' }}"
+          data-ip="{{ event.ip_address or 'Unknown' }}"
+          data-application="{{ event.application_name or 'Unknown Application' }}"
+          data-action="{{ event.action_taken or 'Log' }}"
+          data-message="{{ event.message or 'No event message recorded.' }}"
+          data-created="{{ event.created_at.strftime('%Y-%m-%d %H:%M:%S') if event.created_at else 'Unknown' }}"
+          data-event-type="{{ event.event_type or 'security_event' }}"
+          data-user-agent="Not captured"
+        >
+          {% if selectable|default(false) %}
+            <td class="check-cell"><input type="checkbox" aria-label="Select event {{ event.id }}" disabled></td>
+          {% endif %}
+          <td><span class="severity-badge {{ tone }}">{{ risk }}</span></td>
+          <td><strong>{{ event.threat_score or 0 }}</strong></td>
+          <td>{{ event.matched_rule or 'No rule recorded' }}</td>
+          <td><code>{{ event.ip_address or 'Unknown' }}</code></td>
+          <td>{{ event.application_name or 'Unknown App' }}</td>
+          <td class="path-cell">{{ event.request_path or 'Not captured' }}</td>
+          <td>{{ event.action_taken or 'Log' }}</td>
+          <td><time>{{ event.created_at.strftime('%Y-%m-%d %H:%M:%S') if event.created_at else 'Unknown' }}</time></td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="{{ 9 if selectable|default(false) else 8 }}" class="empty-cell">
+            No security events match the current filters.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

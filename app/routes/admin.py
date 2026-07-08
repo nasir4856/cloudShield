@@ -1,4 +1,5 @@
 from flask import Blueprint, redirect, render_template, request, url_for
+from sqlalchemy import or_
 
 from app.models import (
     AdminUser,
@@ -9,6 +10,7 @@ from app.models import (
     RefreshToken,
     Role,
     SecurityRule,
+    SecurityEvent,
     UserRole,
 )
 from app.security.auth import login_admin, logout_admin, permission_required
@@ -302,6 +304,127 @@ def revoke_key(key_id: int):
 def audit_logs():
     logs = AuditLog.query.order_by(AuditLog.created_at.desc()).limit(100).all()
     return render_template("audit_logs.html", audit_logs=logs)
+
+
+@admin_bp.route("/admin/threats", methods=["GET"])
+@permission_required("view_threats")
+def threat_explorer():
+    query = SecurityEvent.query
+    search = request.args.get("search", "").strip()
+    risk_level = request.args.get("risk_level", "").strip()
+    application = request.args.get("application", "").strip()
+    action = request.args.get("action", "").strip()
+
+    if search:
+        pattern = f"%{search}%"
+        query = query.filter(
+            or_(
+                SecurityEvent.ip_address.ilike(pattern),
+                SecurityEvent.application_name.ilike(pattern),
+                SecurityEvent.matched_rule.ilike(pattern),
+                SecurityEvent.request_path.ilike(pattern),
+                SecurityEvent.message.ilike(pattern),
+            )
+        )
+    if risk_level:
+        query = query.filter(SecurityEvent.risk_level == risk_level)
+    if application:
+        query = query.filter(SecurityEvent.application_name == application)
+    if action:
+        query = query.filter(SecurityEvent.action_taken == action)
+
+    events = query.order_by(SecurityEvent.created_at.desc()).limit(200).all()
+    all_events = SecurityEvent.query.order_by(SecurityEvent.created_at.desc()).limit(200).all()
+    applications = sorted(
+        {event.application_name for event in all_events if event.application_name}
+    )
+    actions = sorted({event.action_taken for event in all_events if event.action_taken})
+    risk_levels = ["Critical", "High Risk", "Suspicious", "Normal"]
+    return render_template(
+        "threat_explorer.html",
+        events=events,
+        applications=applications,
+        actions=actions,
+        risk_levels=risk_levels,
+        filters={
+            "search": search,
+            "risk_level": risk_level,
+            "application": application,
+            "action": action,
+        },
+    )
+
+
+@admin_bp.route("/admin/security-events", methods=["GET"])
+@permission_required("view_threats")
+def security_events():
+    query = SecurityEvent.query
+    search = request.args.get("search", "").strip()
+    risk_level = request.args.get("risk_level", "").strip()
+    action = request.args.get("action", "").strip()
+
+    if search:
+        pattern = f"%{search}%"
+        query = query.filter(
+            or_(
+                SecurityEvent.event_type.ilike(pattern),
+                SecurityEvent.ip_address.ilike(pattern),
+                SecurityEvent.application_name.ilike(pattern),
+                SecurityEvent.matched_rule.ilike(pattern),
+                SecurityEvent.request_path.ilike(pattern),
+                SecurityEvent.message.ilike(pattern),
+            )
+        )
+    if risk_level:
+        query = query.filter(SecurityEvent.risk_level == risk_level)
+    if action:
+        query = query.filter(SecurityEvent.action_taken == action)
+
+    events = query.order_by(SecurityEvent.created_at.desc()).limit(300).all()
+    all_events = SecurityEvent.query.order_by(SecurityEvent.created_at.desc()).limit(300).all()
+    actions = sorted({event.action_taken for event in all_events if event.action_taken})
+    risk_levels = ["Critical", "High Risk", "Suspicious", "Normal"]
+    return render_template(
+        "security_events.html",
+        events=events,
+        actions=actions,
+        risk_levels=risk_levels,
+        filters={
+            "search": search,
+            "risk_level": risk_level,
+            "action": action,
+        },
+    )
+
+
+@admin_bp.route("/admin/reports", methods=["GET"])
+@permission_required("export_reports")
+def reports():
+    return render_template(
+        "placeholder_page.html",
+        page_title="Reports",
+        active_page="reports",
+    )
+
+
+@admin_bp.route("/admin/monitoring", methods=["GET"])
+@permission_required("view_dashboard")
+def monitoring():
+    return render_template(
+        "placeholder_page.html",
+        page_title="Monitoring",
+        active_page="monitoring",
+    )
+
+
+@admin_bp.route("/admin/settings", methods=["GET"])
+@permission_required("manage_settings")
+def settings():
+    return render_template(
+        "placeholder_page.html",
+        page_title="Settings",
+        active_page="settings",
+    )
 
 
 @admin_bp.route("/admin/rules", methods=["GET", "POST"])

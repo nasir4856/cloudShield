@@ -1,99 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Protected Applications</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <style>
-    :root {
-      --color-primary: #3498db;
-      --color-success: #2ecc71;
-      --color-warning: #f39c12;
-      --color-danger: #e74c3c;
-      --color-neutral: #ecf0f1;
-    }
-    body {
-      background: linear-gradient(135deg, #000000, #1a1a1a);
-      color: var(--color-neutral);
-      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      padding: 2rem;
-    }
-    .card {
-      background: rgba(20, 20, 20, 0.9);
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-      padding: 24px;
-      margin-bottom: 24px;
-      border: 1px solid rgba(52, 152, 219, 0.4);
-    }
-    .section-title {
-      color: var(--color-neutral);
-      font-weight: 700;
-      border-bottom: 3px solid var(--color-primary);
-      padding-bottom: 12px;
-      margin-bottom: 18px;
-      text-shadow: 0 0 10px var(--color-primary);
-    }
-    input, textarea {
-      background: #2a2a2a;
-      color: var(--color-neutral);
-      border: 2px solid #444;
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-    }
-    label { display: block; margin-bottom: 6px; color: #cbd5e0; }
-    .btn-block {
-      background-color: var(--color-primary);
-      color: white;
-      border-radius: 8px;
-      padding: 8px 14px;
-    }
-    .btn-unblock {
-      background-color: var(--color-danger);
-      color: white;
-      border-radius: 8px;
-      padding: 8px 14px;
-    }
-    .status-safe { color: var(--color-success); }
-    .status-warning { color: var(--color-warning); }
-    .status-danger { color: var(--color-danger); }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 12px; border-bottom: 1px solid #333; text-align: left; vertical-align: top; }
-  </style>
-</head>
-<body>
-  <div class="container mx-auto">
-    <h1 class="text-4xl font-bold mb-8 text-center" style="text-shadow: 0 0 10px var(--color-primary);">
-      Protected Applications
-    </h1>
-    <div class="text-center mb-8">
-      <a href="{{ url_for('admin.admin_panel') }}" class="btn-block inline-block">Dashboard</a>
-      <a href="{{ url_for('admin.logout') }}" class="btn-unblock inline-block ml-2">Logout</a>
+{% extends 'layout.html' %}
+{% set page_title = 'Protected Applications' %}
+{% set active_page = 'applications' %}
+{% block title %}Protected Applications | CloudShield{% endblock %}
+
+{% block content %}
+<div class="ops-page">
+  <section class="ops-hero">
+    <div>
+      <p class="eyebrow">Operations Workspace</p>
+      <h2>Protected Applications</h2>
+      <p>Manage application onboarding, upstream health, runtime policy, and operator actions from one console.</p>
     </div>
+    <div class="ops-summary">
+      <div><span>Total</span><strong>{{ applications|length }}</strong></div>
+      <div><span>Enabled</span><strong>{{ applications|selectattr('enabled')|list|length }}</strong></div>
+      <div><span>Healthy</span><strong>{{ statuses.values()|select('equalto', 'Healthy')|list|length if statuses else 0 }}</strong></div>
+    </div>
+  </section>
 
-    {% if errors %}
-      <div class="card">
-        <h2 class="section-title">Validation Errors</h2>
-        <ul>
-          {% for error in errors %}
-            <li class="status-danger">{{ error }}</li>
-          {% endfor %}
-        </ul>
+  {% if errors %}
+    <section class="soc-card alert-card">
+      <div class="card-header-row">
+        <div>
+          <h3>Validation Errors</h3>
+          <p>Review the application configuration and try again.</p>
+        </div>
       </div>
-    {% endif %}
+      <ul class="compact-error-list">
+        {% for error in errors %}
+          <li class="status-danger">{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
 
-    {% if tested and tested_status %}
-      <div class="card">
-        <h2 class="section-title">Connection Test</h2>
-        <p>Application {{ tested }} status: <strong>{{ tested_status }}</strong></p>
+  {% if tested and tested_status %}
+    <section class="soc-card alert-card">
+      <div class="card-header-row">
+        <div>
+          <h3>Connection Test</h3>
+          <p>Application {{ tested }} returned <strong>{{ tested_status }}</strong>.</p>
+        </div>
+        <span class="status-pill {{ 'safe' if tested_status == 'Healthy' else 'warning' if tested_status == 'Timeout' else 'danger' }}">{{ tested_status }}</span>
       </div>
-    {% endif %}
+    </section>
+  {% endif %}
 
-    <div class="card">
-      <h2 class="section-title">Create Application</h2>
-      <form method="POST" class="grid md:grid-cols-2 gap-4">
+  <section class="ops-grid">
+    <div class="soc-card create-app-card">
+      <div class="card-header-row">
+        <div>
+          <h3>Onboard Application</h3>
+          <p>Register a public path and upstream HTTP target.</p>
+        </div>
+        <i data-lucide="plus-circle"></i>
+      </div>
+      <form method="POST" class="ops-form">
         {{ csrf_field()|safe }}
         <div>
           <label>Name</label>
@@ -103,11 +65,11 @@
           <label>Public Path</label>
           <input type="text" name="public_path" placeholder="/crm" required>
         </div>
-        <div class="md:col-span-2">
+        <div class="full-field">
           <label>Upstream URL</label>
           <input type="text" name="upstream_url" placeholder="http://127.0.0.1:8000" required>
         </div>
-        <div class="md:col-span-2">
+        <div class="full-field">
           <label>Description</label>
           <textarea name="description" rows="2"></textarea>
         </div>
@@ -119,62 +81,59 @@
           <label>Burst Limit</label>
           <input type="text" name="burst_limit" value="50">
         </div>
-        <label><input type="checkbox" name="enabled" checked style="width:auto;"> Enabled</label>
-        <label><input type="checkbox" name="captcha_enabled" checked style="width:auto;"> CAPTCHA Enabled</label>
-        <label><input type="checkbox" name="email_alerts" checked style="width:auto;"> Email Alerts</label>
-        <div class="md:col-span-2">
-          <button type="submit" class="btn-block">Create Application</button>
+        <div class="ops-toggle-row">
+          <label><input type="checkbox" name="enabled" checked> Enabled</label>
+          <label><input type="checkbox" name="captcha_enabled" checked> CAPTCHA</label>
+          <label><input type="checkbox" name="email_alerts" checked> Email Alerts</label>
         </div>
+        <button type="submit" class="btn-block full-field">Create Application</button>
       </form>
     </div>
 
-    <div class="card">
-      <h2 class="section-title">Current Applications</h2>
-      {% if applications %}
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Public Path</th>
-              <th>Upstream</th>
-              <th>Status</th>
-              <th>Enabled</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for application in applications %}
-              <tr>
-                <td>{{ application.name }}</td>
-                <td>{{ application.public_path }}</td>
-                <td>{{ application.upstream_url }}</td>
-                <td class="{{ 'status-safe' if statuses[application.id] == 'Healthy' else 'status-warning' if statuses[application.id] == 'Timeout' else 'status-danger' }}">
-                  {{ statuses[application.id] }}
-                </td>
-                <td>{{ 'Yes' if application.enabled else 'No' }}</td>
-                <td>
-                  <a href="{{ url_for('admin.edit_application', application_id=application.id) }}" class="btn-block inline-block mb-2">Edit</a>
-                  <form method="POST" action="{{ url_for('admin.toggle_application', application_id=application.id) }}" class="inline-block">
-                    {{ csrf_field()|safe }}
-                    <button type="submit" class="btn-block">{{ 'Disable' if application.enabled else 'Enable' }}</button>
-                  </form>
-                  <form method="POST" action="{{ url_for('admin.test_application', application_id=application.id) }}" class="inline-block">
-                    {{ csrf_field()|safe }}
-                    <button type="submit" class="btn-block">Test</button>
-                  </form>
-                  <form method="POST" action="{{ url_for('admin.delete_application', application_id=application.id) }}" class="inline-block">
-                    {{ csrf_field()|safe }}
-                    <button type="submit" class="btn-unblock">Delete</button>
-                  </form>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <p class="text-gray-500">No protected applications configured.</p>
-      {% endif %}
+    <div class="ops-side-stack">
+      <div class="soc-card">
+        <div class="card-header-row">
+          <div>
+            <h3>Fleet Health</h3>
+            <p>Current health check snapshot.</p>
+          </div>
+          <span class="status-pill">Live check</span>
+        </div>
+        <div class="system-metrics">
+          <div><span>Healthy</span><strong class="status-safe">{{ statuses.values()|select('equalto', 'Healthy')|list|length if statuses else 0 }}</strong></div>
+          <div><span>Offline</span><strong class="status-danger">{{ statuses.values()|select('equalto', 'Offline')|list|length if statuses else 0 }}</strong></div>
+          <div><span>Timeout</span><strong class="status-warning">{{ statuses.values()|select('equalto', 'Timeout')|list|length if statuses else 0 }}</strong></div>
+          <div><span>Unknown</span><strong>{{ statuses.values()|select('equalto', 'Unknown')|list|length if statuses else 0 }}</strong></div>
+        </div>
+      </div>
+
+      <div class="soc-card">
+        <div class="card-header-row">
+          <div>
+            <h3>Runtime Signals</h3>
+            <p>Prepared for request telemetry and threat aggregation.</p>
+          </div>
+          <span class="status-pill warning">Partial data</span>
+        </div>
+        <div class="ops-signal-list">
+          <div><span>Request Volume</span><strong>Pending</strong><small>Telemetry counter not connected to this view yet.</small></div>
+          <div><span>Threat Count</span><strong>Pending</strong><small>Application-scoped threat summary pending route data.</small></div>
+        </div>
+      </div>
     </div>
-  </div>
-</body>
-</html>
+  </section>
+
+  <section class="app-card-grid">
+    {% for application in applications %}
+      {% set status = statuses[application.id] if statuses and application.id in statuses else 'Unknown' %}
+      {% include 'components/applications/application_card.html' %}
+    {% else %}
+      <div class="soc-card empty-ops-card">
+        <i data-lucide="server-off"></i>
+        <h3>No protected applications configured.</h3>
+        <p>Use the onboarding form to register your first upstream service.</p>
+      </div>
+    {% endfor %}
+  </section>
+</div>
+{% endblock %}

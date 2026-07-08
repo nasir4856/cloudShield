@@ -1,0 +1,27 @@
+<article class="soc-card">
+  <div class="card-header-row">
+    <div>
+      <h3>System Status</h3>
+      <p>Runtime readiness and current defensive state.</p>
+    </div>
+    <span id="socReadyValue" class="status-pill neutral">checking</span>
+  </div>
+  <div class="system-metrics">
+    <div>
+      <span>Readiness Ping</span>
+      <strong id="socPingValue" class="metric-value">Loading</strong>
+    </div>
+    <div>
+      <span>Blocked IPs</span>
+      <strong>{{ blocked_count }}</strong>
+    </div>
+    <div>
+      <span>Recent Requests</span>
+      <strong>{{ request_total }}</strong>
+    </div>
+    <div>
+      <span>Top Rule Hits</span>
+      <strong>{{ top_rule_count }}</strong>
+    </div>
+  </div>
+</article>

@@ -1,0 +1,46 @@
+<aside class="investigation-panel" id="investigationPanel" aria-live="polite">
+  <div class="panel-empty" id="investigationEmpty">
+    <i data-lucide="scan-search"></i>
+    <h3>Select an event</h3>
+    <p>Click a row to open the investigation workspace.</p>
+  </div>
+  <div class="panel-content" id="investigationContent" hidden>
+    <div class="panel-header">
+      <div>
+        <p class="eyebrow">Investigation</p>
+        <h3 id="panelRule">Security event</h3>
+      </div>
+      <span class="severity-badge" id="panelRisk">Unknown</span>
+    </div>
+    <div class="score-ring">
+      <span>Threat Score</span>
+      <strong id="panelScore">0</strong>
+    </div>
+    <div class="detail-grid">
+      <div><span>Source IP</span><strong id="panelIp">Unknown</strong></div>
+      <div><span>Application</span><strong id="panelApplication">Unknown</strong></div>
+      <div><span>Action Taken</span><strong id="panelAction">Log</strong></div>
+      <div><span>User-Agent</span><strong id="panelUserAgent">Not captured</strong></div>
+    </div>
+    <div class="detail-block">
+      <span>Request Path</span>
+      <code id="panelPath">Not captured</code>
+    </div>
+    <div class="detail-block">
+      <span>Event Message</span>
+      <p id="panelMessage">No event selected.</p>
+    </div>
+    <div class="timeline-list">
+      <h4>Timeline</h4>
+      <div class="timeline-item"><span></span><p><strong id="panelCreated">Unknown</strong> Event recorded</p></div>
+      <div class="timeline-item"><span></span><p>Rule evaluation completed</p></div>
+      <div class="timeline-item"><span></span><p id="panelTimelineAction">Action applied</p></div>
+    </div>
+    <div class="related-events">
+      <h4>Related Events</h4>
+      <div id="panelRelated">
+        <p class="placeholder-copy">Select an event to inspect related activity from the same IP.</p>
+      </div>
+    </div>
+  </div>
+</aside>

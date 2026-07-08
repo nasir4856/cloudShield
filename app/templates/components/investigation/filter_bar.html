@@ -1,0 +1,37 @@
+<form class="investigation-filters" method="GET">
+  <div class="filter-search">
+    <i data-lucide="search"></i>
+    <input
+      type="search"
+      name="search"
+      value="{{ filters.search }}"
+      placeholder="Search IP, rule, path, application, or message"
+      aria-label="Search security events"
+    >
+  </div>
+  <select name="risk_level" aria-label="Filter by severity">
+    <option value="">All severities</option>
+    {% for level in risk_levels %}
+      <option value="{{ level }}" {{ 'selected' if filters.risk_level == level else '' }}>{{ level }}</option>
+    {% endfor %}
+  </select>
+  {% if applications is defined %}
+    <select name="application" aria-label="Filter by application">
+      <option value="">All applications</option>
+      {% for application in applications %}
+        <option value="{{ application }}" {{ 'selected' if filters.application == application else '' }}>{{ application }}</option>
+      {% endfor %}
+    </select>
+  {% endif %}
+  <select name="action" aria-label="Filter by action">
+    <option value="">All actions</option>
+    {% for action in actions %}
+      <option value="{{ action }}" {{ 'selected' if filters.action == action else '' }}>{{ action }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn-block investigation-filter-button" type="submit">
+    <i data-lucide="filter"></i>
+    Apply
+  </button>
+  <a class="ghost-button" href="{{ request.path }}">Reset</a>
+</form>

@@ -1,0 +1,41 @@
+<header class="topbar">
+  <div class="topbar-left">
+    <button class="icon-button mobile-menu-button" id="mobileMenuButton" type="button" aria-label="Open navigation">
+      <i data-lucide="menu"></i>
+    </button>
+    <div>
+      <p class="eyebrow">Security Operations</p>
+      <h1 class="topbar-title">{{ page_title|default('Dashboard') }}</h1>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle theme">
+      <i data-lucide="sun"></i>
+    </button>
+    <div class="dropdown">
+      <button class="icon-button" data-dropdown-target="notificationsMenu" type="button" aria-label="Notifications">
+        <i data-lucide="bell"></i>
+        <span class="dot"></span>
+      </button>
+      <div class="dropdown-menu" id="notificationsMenu">
+        <strong>Notifications</strong>
+        <p>No live notification feed is connected yet.</p>
+      </div>
+    </div>
+    <div class="dropdown">
+      <button class="profile-button" data-dropdown-target="profileMenu" type="button">
+        <span class="avatar">{{ (session.get('admin_username', 'U')[:1])|upper }}</span>
+        <span class="profile-copy">
+          <strong>{{ session.get('admin_username', 'User') }}</strong>
+          <small>CloudShield Console</small>
+        </span>
+        <i data-lucide="chevron-down"></i>
+      </button>
+      <div class="dropdown-menu profile-menu" id="profileMenu">
+        <a href="{{ url_for('admin.change_password') }}">Change Password</a>
+        <a href="{{ url_for('admin.api_keys') }}">API Keys</a>
+        <a href="{{ url_for('admin.logout') }}">Logout</a>
+      </div>
+    </div>
+  </div>
+</header>

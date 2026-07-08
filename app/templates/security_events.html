@@ -1,0 +1,49 @@
+{% extends 'layout.html' %}
+{% set page_title = 'Security Events' %}
+{% set active_page = 'security_events' %}
+{% block title %}Security Events | CloudShield{% endblock %}
+
+{% block content %}
+<div class="investigation-page">
+  <section class="investigation-hero compact">
+    <div>
+      <p class="eyebrow">Event Review</p>
+      <h2>Security Events</h2>
+      <p>High-density event review for analysts, auditors, and incident responders.</p>
+    </div>
+    <div class="event-actions">
+      <button class="ghost-button" type="button" disabled>
+        <i data-lucide="archive"></i>
+        Bulk actions
+      </button>
+      <button class="btn-block" type="button" disabled>
+        <i data-lucide="download"></i>
+        Export
+      </button>
+    </div>
+  </section>
+
+  <div class="sticky-filter-wrap">
+    {% include 'components/investigation/filter_bar.html' %}
+  </div>
+
+  <section class="investigation-workspace">
+    <div class="soc-card investigation-list-card">
+      <div class="card-header-row">
+        <div>
+          <h3>Event Stream</h3>
+          <p>Bulk selection and export controls are prepared for a future reporting workflow.</p>
+        </div>
+        <span class="status-pill">{{ events|length }} records</span>
+      </div>
+      {% set selectable = true %}
+      {% include 'components/investigation/event_table.html' %}
+    </div>
+    {% include 'components/investigation/panel.html' %}
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {% include 'components/investigation/panel_script.html' %}
+{% endblock %}
